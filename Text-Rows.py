@@ -16,22 +16,22 @@ class MyWindow(Window.Window):
         self.fps_display.draw()
         for label in self.labels:
             label.refreshValue()
+            #label.draw()
         self.batch.draw()
 
     def setupLabels(self, valueVars):
         columns = 30
-        rows = len(valueVars) // columns
+        rows = len(valueVars)
         stringWidth = 50 #pixel gap
         letterHeight = 80
-        for row in range(rows):
-            for column in range(columns):                
-                label = MyLabel(valueVars[column + columns*row],
-                                font_name='Consolas',
-                                font_size=16,                                  
-                                x=column * stringWidth, y=row * letterHeight,
-                                anchor_x='left', anchor_y='top',
-                                batch=self.batch)
-                self.labels.append(label)
+        for row in range(rows):           
+            label = MyLabel(valueVars[row],
+                            font_name='Consolas',
+                            font_size=16,                                  
+                            x=0, y=row * letterHeight,
+                            anchor_x='left', anchor_y='top',
+                            batch=self.batch)
+            self.labels.append(label)
         
 class ValueVar(object):
     def __init__(self):
@@ -49,9 +49,9 @@ class MyLabel(Label):
     def __init__(self, valueVar, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.valueVar = valueVar
-        
+    
     def refreshValue(self):
-        self.text = str(int(random.random() * 99)).zfill(2)
+        self.text = "  ".join(str(e) for e in self.valueVar)
         
 class GUI_Main(object):
     def __init__(self):
@@ -73,18 +73,22 @@ class Controller(object):
         self.items = items
 
     def update(self):
-        for item in self.items:                 
-            item.setValue()
+        for row in self.items:                 
+            for item in row:
+                item.setValue()
             
 
 
 async def run_tk(view, controller):   
     try:
         startTime = time.time()
-        count = 1000
+        count = 1000        
+        
         while count > 0:
             # update gui            
+            t = time.time()
             view.update()      
+            print (time.time() - t)
             # update logic if required.            
             controller.update()            
             count -= 1
@@ -97,7 +101,7 @@ async def run_tk(view, controller):
 
 if __name__ == '__main__':
     gui = GUI_Main()    
-    modelVars = [ValueVar() for i in range(600)]        
+    modelVars = [[ValueVar() for j in range(30)] for i in range(20)]        
     controller = Controller(modelVars)
     gui.linkToModel(modelVars)
         # Start running the tkinter update() through an asyncio coroutine
